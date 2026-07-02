@@ -1,0 +1,7 @@
+# Chặn môi trường ảo và cấu hình của Lab1
+Lab1/.venv/
+Lab1/.env
+
+# Chặn chung cho Python
+**/__pycache__/
+**/*.pyc

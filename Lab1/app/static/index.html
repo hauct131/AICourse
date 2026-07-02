@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenRouter Gemini Playground</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Highlight.js for Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Marked.js for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-primary: #6366f1; /* Indigo */
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --accent-secondary: #10b981; /* Emerald */
+            --accent-secondary-glow: rgba(16, 185, 129, 0.4);
+            --accent-danger: #ef4444;
+            --user-bubble: #4f46e5;
+            --model-bubble: rgba(31, 41, 55, 0.8);
+            --font-main: 'Outfit', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 40%);
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            z-index: 10;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2.25rem;
+            height: 2.25rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .status-area {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+        }
+
+        .status-dot.healthy {
+            background-color: var(--accent-secondary);
+            box-shadow: 0 0 8px var(--accent-secondary-glow);
+        }
+
+        .status-dot.degraded {
+            background-color: #f59e0b; /* Amber */
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+        }
+
+        .status-dot.error {
+            background-color: var(--accent-danger);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
+
+        /* Layout Container */
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar configuration */
+        .sidebar {
+            width: 320px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid var(--card-border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-section label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.75px;
+        }
+
+        .sidebar-input, .sidebar-select, .sidebar-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .sidebar-input:focus, .sidebar-select:focus, .sidebar-textarea:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .info-card {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #c7d2fe;
+        }
+
+        .info-card h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #a5b4fc;
+        }
+
+        /* Main Chat Window */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(11, 15, 25, 0.3);
+            position: relative;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            scroll-behavior: smooth;
+        }
+
+        .message-row {
+            display: flex;
+            width: 100%;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .message-row.model {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message-row.user .message-bubble {
+            background: var(--user-bubble);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .message-row.model .message-bubble {
+            background: var(--model-bubble);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-bubble p {
+            margin-bottom: 0.75rem;
+        }
+        .message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Markdown Styles inside Bubbles */
+        .message-bubble pre {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 0.75rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .message-bubble code {
+            font-family: var(--font-code);
+            font-size: 0.85rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.15rem 0.3rem;
+            border-radius: 4px;
+        }
+
+        .message-bubble pre code {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .message-bubble ul, .message-bubble ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .message-bubble li {
+            margin-bottom: 0.25rem;
+        }
+
+        .message-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .message-row.user .message-meta {
+            justify-content: flex-end;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.5rem 0.25rem;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* Input Panel */
+        .input-panel {
+            padding: 1.5rem 2rem;
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.85rem 1.25rem;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            font-size: 0.95rem;
+            outline: none;
+            resize: none;
+            height: 52px;
+            max-height: 150px;
+            line-height: 1.5;
+            transition: all 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--accent-primary), #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 1.5rem;
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+        }
+
+        .send-btn:active {
+            transform: translateY(1px);
+        }
+
+        .send-btn:disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .input-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding: 0 0.25rem;
+        }
+
+        .token-info {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: var(--font-main);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .clear-btn:hover {
+            color: var(--accent-danger);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Copy Button for code blocks */
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 0.4rem 0.75rem;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: var(--font-code);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 0.75rem;
+        }
+
+        .code-header + pre {
+            margin-top: 0 !important;
+            border-top-left-radius: 0 !important;
+            border-top-right-radius: 0 !important;
+        }
+
+        .copy-code-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .copy-code-btn:hover {
+            color: var(--text-main);
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                max-height: 250px;
+                border-right: none;
+                border-bottom: 1px solid var(--card-border);
+                padding: 1.25rem;
+            }
+            header {
+                padding: 1rem;
+            }
+            .messages-container {
+                padding: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">O</div>
+            <div class="logo-text">OpenRouter Playground</div>
+        </div>
+        <div class="status-area">
+            <div class="status-indicator">
+                <div id="statusDot" class="status-dot"></div>
+                <span id="statusText">Checking API...</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <label for="apiKey">OpenRouter API Key (Header override)</label>
+                <input type="password" id="apiKey" class="sidebar-input" placeholder="sk-or-v1-..." />
+            </div>
+
+            <div class="sidebar-section">
+                <label for="modelSelect">Model</label>
+                <select id="modelSelect" class="sidebar-select">
+                    <option value="openai/gpt-oss-120b:free" selected>openai/gpt-oss-120b:free (Default)</option>
+                    <option value="google/gemini-2.5-flash:free">google/gemini-2.5-flash:free</option>
+                    <option value="google/gemini-2.5-pro:free">google/gemini-2.5-pro:free</option>
+                </select>
+            </div>
+
+            <div class="sidebar-section">
+                <label for="systemInstruction">System Instruction</label>
+                <textarea id="systemInstruction" class="sidebar-textarea" placeholder="e.g. You are a helpful AI assistant that explains complex subjects simply."></textarea>
+            </div>
+
+            <div class="info-card">
+                <h4>OpenRouter Free Tier</h4>
+                <p style="margin-top: 0.25rem;">OpenRouter provides unified access to LLMs. Free models such as <code>openai/gpt-oss-120b:free</code> and <code>google/gemini-2.5-flash:free</code> run with no token costs, but may be rate-limited by upstream providers.</p>
+            </div>
+        </aside>
+
+        <!-- Chat Area -->
+        <main class="chat-area">
+            <div class="messages-container" id="messagesContainer">
+                <!-- Welcome Message -->
+                <div class="message-row model">
+                    <div class="message-bubble">
+                        <p>Welcome! I'm your assistant connected to OpenRouter. How can I help you today?</p>
+                        <div class="message-meta">
+                            <span>System</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Panel -->
+            <div class="input-panel">
+                <div class="input-container">
+                    <textarea id="chatInput" class="chat-input" placeholder="Type a message... (Press Enter to send, Shift+Enter for new line)" rows="1"></textarea>
+                    <button id="sendBtn" class="send-btn">
+                        <span>Send</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <div class="token-info">
+                        <span id="tokenDisplay">Tokens: --</span>
+                    </div>
+                    <button id="clearChatBtn" class="clear-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Clear Chat
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Configure marked.js options
+        marked.setOptions({
+            highlight: function(code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-'
+        });
+
+        // Custom Renderer to inject custom Copy Headers above Pre blocks
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, infostring, escaped) {
+            const lang = (infostring || 'code').match(/\S*/)[0];
+            const escapedCode = code.replace(/"/g, '&quot;');
+            
+            return `
+                <div class="code-header">
+                    <span>${lang}</span>
+                    <span class="copy-code-btn" onclick="copyToClipboard(this, \`${escapedCode}\`)">Copy</span>
+                </div>
+                <pre><code class="hljs language-${lang}">${hljs.highlight(code, { language: hljs.getLanguage(lang) ? lang : 'plaintext' }).value}</code></pre>
+            `;
+        };
+        marked.use({ renderer });
+
+        // State variables
+        let chatHistory = [];
+        const messagesContainer = document.getElementById('messagesContainer');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+        const apiKeyInput = document.getElementById('apiKey');
+        const modelSelect = document.getElementById('modelSelect');
+        const systemInstructionInput = document.getElementById('systemInstruction');
+        const tokenDisplay = document.getElementById('tokenDisplay');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+
+        // Load dynamic API key from local storage on load
+        if (localStorage.getItem('openrouter_api_key')) {
+            apiKeyInput.value = localStorage.getItem('openrouter_api_key');
+        }
+
+        // Save key on change
+        apiKeyInput.addEventListener('input', () => {
+            localStorage.setItem('openrouter_api_key', apiKeyInput.value.trim());
+            checkHealth();
+        });
+
+        // Adjust textarea height automatically based on content
+        chatInput.addEventListener('input', () => {
+            chatInput.style.height = 'auto';
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 150) + 'px';
+        });
+
+        // Handle Enter/Shift-Enter key press
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitMessage();
+            }
+        });
+
+        sendBtn.addEventListener('click', submitMessage);
+        clearChatBtn.addEventListener('click', clearChat);
+
+        // Check backend health status
+        async function checkHealth() {
+            const headers = {};
+            const localKey = apiKeyInput.value.trim();
+            if (localKey) {
+                headers['X-OpenRouter-API-Key'] = localKey;
+            }
+
+            try {
+                const response = await fetch('/health', { headers });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.status === 'healthy') {
+                        statusDot.className = 'status-dot healthy';
+                        statusText.innerText = 'Connected';
+                    } else {
+                        statusDot.className = 'status-dot degraded';
+                        statusText.innerText = 'Key Required';
+                    }
+                } else {
+                    statusDot.className = 'status-dot error';
+                    statusText.innerText = 'Server Error';
+                }
+            } catch (err) {
+                statusDot.className = 'status-dot error';
+                statusText.innerText = 'Offline';
+            }
+        }
+
+        // Append message to UI
+        function appendMessage(role, text, showLoading = false) {
+            const messageRow = document.createElement('div');
+            messageRow.className = `message-row ${role === 'user' ? 'user' : 'model'}`;
+            
+            const messageBubble = document.createElement('div');
+            messageBubble.className = 'message-bubble';
+            
+            if (showLoading) {
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'typing-indicator';
+                typingIndicator.innerHTML = `
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                `;
+                messageBubble.appendChild(typingIndicator);
+            } else {
+                if (role === 'model' || role === 'assistant') {
+                    // Parse markdown for AI messages
+                    messageBubble.innerHTML = marked.parse(text);
+                } else {
+                    // Plain text for user messages
+                    const p = document.createElement('p');
+                    p.textContent = text;
+                    messageBubble.appendChild(p);
+                }
+                
+                const meta = document.createElement('div');
+                meta.className = 'message-meta';
+                meta.innerHTML = `<span>${role === 'user' ? 'You' : 'Assistant'}</span>`;
+                messageBubble.appendChild(meta);
+            }
+            
+            messageRow.appendChild(messageBubble);
+            messagesContainer.appendChild(messageRow);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return messageRow;
+        }
+
+        // Send chat message
+        async function submitMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Clear input & reset height
+            chatInput.value = '';
+            chatInput.style.height = '52px';
+            
+            // Disable input and button
+            chatInput.disabled = true;
+            sendBtn.disabled = true;
+
+            // Append user message
+            appendMessage('user', text);
+
+            // Append loading indicator
+            const loadingRow = appendMessage('model', '', true);
+
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            const customKey = apiKeyInput.value.trim();
+            if (customKey) {
+                headers['X-OpenRouter-API-Key'] = customKey;
+            }
+
+            const payload = {
+                message: text,
+                history: chatHistory,
+                model: modelSelect.value,
+                system_instruction: systemInstructionInput.value.trim() || undefined
+            };
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                // Remove loading row
+                loadingRow.remove();
+
+                if (response.ok) {
+                    // Append model response
+                    appendMessage('model', data.response);
+                    
+                    // Update client side history
+                    chatHistory.push({ role: 'user', content: text });
+                    chatHistory.push({ role: 'assistant', content: data.response });
+                    
+                    // Display token usage if available
+                    if (data.usage) {
+                        tokenDisplay.innerText = `Tokens: ${data.usage.total_token_count} (In: ${data.usage.prompt_token_count} | Out: ${data.usage.candidates_token_count})`;
+                    } else {
+                        tokenDisplay.innerText = 'Tokens: N/A';
+                    }
+                } else {
+                    const errorDetail = data.detail || 'Failed to generate response.';
+                    appendMessage('model', `⚠️ **Error**: ${errorDetail}`);
+                }
+            } catch (err) {
+                loadingRow.remove();
+                appendMessage('model', `⚠️ **Connection Error**: Unable to reach the API server. Please check if your FastAPI container is running.`);
+            } finally {
+                chatInput.disabled = false;
+                sendBtn.disabled = false;
+                chatInput.focus();
+                checkHealth();
+            }
+        }
+
+        // Clear Chat History
+        function clearChat() {
+            chatHistory = [];
+            // Remove all message rows except the first (Welcome Message)
+            const rows = Array.from(messagesContainer.querySelectorAll('.message-row'));
+            rows.slice(1).forEach(row => row.remove());
+            tokenDisplay.innerText = 'Tokens: --';
+        }
+
+        // Copy Code block to clipboard helper
+        function copyToClipboard(button, codeText) {
+            navigator.clipboard.writeText(codeText).then(() => {
+                button.innerText = 'Copied!';
+                button.style.color = 'var(--accent-secondary)';
+                setTimeout(() => {
+                    button.innerText = 'Copy';
+                    button.style.color = 'var(--text-muted)';
+                }, 2000);
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+            });
+        }
+
+        // Initial run
+        checkHealth();
+    </script>
+</body>
+</html>
