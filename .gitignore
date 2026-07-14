@@ -5,3 +5,11 @@ Lab1/.env
 # Chặn chung cho Python
 **/__pycache__/
 **/*.pyc
+
+# Bỏ qua thư mục môi trường ảo
+.venv/
+venv/
+ENV/
+
+# Bỏ qua file cấu hình bảo mật
+.env
