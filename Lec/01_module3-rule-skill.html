@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 3 — Code Assist: Rules, Skills & Quản lý tri thức</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #07090f;
+  --surface: #0e1118;
+  --card: #131720;
+  --border: #1c2236;
+  --accent: #4f8ef7;
+  --gold: #f0b429;
+  --green: #2dd4a0;
+  --red: #f87171;
+  --purple: #a78bfa;
+  --cyan: #22d3ee;
+  --text: #dde3f0;
+  --muted: #5a6580;
+  --dim: #2a3350;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ── NAV ── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(7,9,15,.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  padding: 0 24px;
+}
+.nav-btn {
+  padding: 14px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color .2s, border-color .2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── SECTIONS ── */
+.section { display: none; max-width: 900px; margin: 0 auto; padding: 56px 24px 100px; }
+.section.active { display: block; }
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+h2 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-top: 36px;
+}
+h4 { font-size: .98rem; font-weight: 600; margin: 20px 0 8px; color: var(--text); }
+p { color: #a0aec0; margin-bottom: 16px; }
+strong { color: var(--text); }
+ul, ol { color: #a0aec0; margin: 0 0 16px 22px; }
+li { margin-bottom: 7px; }
+code.inline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: rgba(34,211,238,.08);
+  color: var(--cyan);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.lead {
+  font-size: 1.1rem;
+  color: #8899bb;
+  line-height: 1.75;
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── CALLOUT ── */
+.callout {
+  border-left: 3px solid var(--accent);
+  background: rgba(79,142,247,.06);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  margin: 24px 0;
+  font-size: 14px;
+  color: #8fadd4;
+}
+.callout.gold { border-color: var(--gold); background: rgba(240,180,41,.06); color: #bfa060; }
+.callout.green { border-color: var(--green); background: rgba(45,212,160,.06); color: #60c9a8; }
+.callout.purple { border-color: var(--purple); background: rgba(167,139,250,.06); color: #b0a0e0; }
+.callout.red { border-color: var(--red); background: rgba(248,113,113,.06); color: #e09090; }
+.callout strong { color: var(--text); }
+
+/* ── GRID CARDS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.card-icon { font-size: 1.6rem; margin-bottom: 10px; }
+.card-title { font-weight: 600; font-size: .9rem; margin-bottom: 6px; color: var(--text); }
+.card-desc { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+/* ── COMPARISON TABLE ── */
+.cmp-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 13px; }
+.cmp-table th {
+  background: var(--surface); padding: 12px 14px; text-align: left; font-weight: 600;
+  color: var(--text); border-bottom: 2px solid var(--border); font-size: 12px;
+}
+.cmp-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+.cmp-table tr:hover td { background: rgba(79,142,247,.03); }
+.tag-cell { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+.tag-rule { background: rgba(240,180,41,.12); color: var(--gold); }
+.tag-skill { background: rgba(167,139,250,.12); color: var(--purple); }
+
+/* ── ARCHITECTURE / FLOW ── */
+.arch { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin: 28px 0; }
+.arch-flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; }
+.arch-box { flex: 1; min-width: 120px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 14px; text-align: center; }
+.arch-box.a1 { border-color: rgba(79,142,247,.4); background: rgba(79,142,247,.05); }
+.arch-box.a2 { border-color: rgba(167,139,250,.4); background: rgba(167,139,250,.05); }
+.arch-box.a3 { border-color: rgba(45,212,160,.4); background: rgba(45,212,160,.05); }
+.arch-box.a4 { border-color: rgba(240,180,41,.4); background: rgba(240,180,41,.05); }
+.arch-icon { font-size: 1.7rem; margin-bottom: 8px; }
+.arch-box-title { font-weight: 600; font-size: .82rem; color: var(--text); margin-bottom: 6px; }
+.arch-box-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.arch-arrow { display: flex; align-items: center; color: var(--muted); font-size: 1.4rem; padding: 0 6px; }
+
+/* ── TERMINAL ── */
+.terminal { background: #05070c; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 20px 0; font-family: 'JetBrains Mono', monospace; }
+.terminal-bar { background: #0d1119; padding: 8px 14px; display: flex; gap: 6px; align-items: center; border-bottom: 1px solid var(--border); }
+.tdot { width: 11px; height: 11px; border-radius: 50%; }
+.tdot.r { background: #ff5f56; } .tdot.y { background: #ffbd2e; } .tdot.g { background: #27c93f; }
+.terminal-title { font-size: 11px; color: var(--muted); margin-left: 8px; }
+.terminal-body { padding: 16px; font-size: 12.5px; line-height: 1.75; white-space: pre-wrap; }
+.t-cmd { color: var(--green); } .t-out { color: var(--muted); } .t-hi { color: var(--cyan); } .t-prompt { color: var(--gold); } .t-cmt { color: #4a5578; font-style: italic; }
+
+/* ── CODE FILE (annotated) ── */
+.filebox { background: #05070c; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 20px 0; }
+.filebox-bar { background: #0d1119; padding: 7px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--cyan); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+.filebox-tag { color: var(--muted); }
+.filebox pre { padding: 15px 16px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.65; color: #cdd6e8; overflow-x: auto; white-space: pre; }
+.c-key { color: var(--purple); } .c-str { color: var(--green); } .c-cmt { color: #4a5578; } .c-h { color: var(--gold); }
+
+/* ── FOLDER TREE ── */
+.tree { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.85; color: var(--muted); margin: 20px 0; overflow-x: auto; white-space: pre; }
+.tree .dir { color: var(--accent); } .tree .key { color: var(--gold); } .tree .cmt { color: #4a5578; }
+
+/* ── INTERACTIVE TOGGLE ── */
+.demo { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 26px 0; }
+.pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.pill { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; transition: all .15s; }
+.pill:hover { color: var(--text); border-color: var(--accent); }
+.pill.active { background: rgba(79,142,247,.12); color: var(--accent); border-color: var(--accent); }
+.pill.active.g { background: rgba(45,212,160,.12); color: var(--green); border-color: var(--green); }
+.pill.active.p { background: rgba(167,139,250,.12); color: var(--purple); border-color: var(--purple); }
+.demo-out { background: var(--surface); border-radius: 8px; padding: 18px; border-left: 3px solid var(--accent); min-height: 90px; font-size: 13.5px; color: var(--text); line-height: 1.65; }
+.demo-out.g { border-color: var(--green); } .demo-out.p { border-color: var(--purple); } .demo-out.gd { border-color: var(--gold); }
+.demo-out .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 8px; }
+
+/* ── STEP ── */
+.step { display: flex; gap: 16px; margin: 22px 0; }
+.step-num { flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px; background: rgba(79,142,247,.12); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.step-body { flex: 1; }
+.step-body h4 { margin-top: 3px; }
+
+.badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: .05em; }
+.badge.blue { background: rgba(79,142,247,.14); color: var(--accent); }
+.badge.gold { background: rgba(240,180,41,.14); color: var(--gold); }
+.badge.purple { background: rgba(167,139,250,.14); color: var(--purple); }
+.badge.green { background: rgba(45,212,160,.14); color: var(--green); }
+
+@media (max-width: 600px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .arch-arrow { transform: rotate(90deg); padding: 8px 0; }
+  .arch-box { min-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="show('code')">① Claude Code &amp; vòng lặp</button>
+  <button class="nav-btn" onclick="show('rules')">② Rules — luật project</button>
+  <button class="nav-btn" onclick="show('skills')">③ Skills — năng lực</button>
+  <button class="nav-btn" onclick="show('knowledge')">④ Tri thức cho RAG</button>
+  <button class="nav-btn" onclick="show('lab')">⑤ Lab thực hành</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 1 — CLAUDE CODE & THE DEV LOOP -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section active" id="s-code">
+  <div class="eyebrow">Module 03 · Code Assist</div>
+  <h2>Dùng AI (Claude Code) để xây dựng ứng dụng</h2>
+  <p class="lead">
+    Ở Module ② bạn đã học model chạy thế nào. Bây giờ ta dùng model đó để <strong>viết phần mềm</strong>. Claude Code là một <strong>agent chạy trong terminal</strong>: nó đọc codebase, lập kế hoạch, sửa nhiều file, chạy test và tự sửa lỗi. Nhưng có một sự thật cốt lõi phải hiểu trước: <strong>mỗi phiên (session) của AI là một tờ giấy trắng</strong> — nó không nhớ gì về project của bạn. Đó là lý do vì sao ta cần <em>Rules</em>, <em>Skills</em> và một hệ thống <em>quản lý tri thức</em>.
+  </p>
+
+  <h3>Vòng lặp làm việc của một coding agent</h3>
+  <p>Claude Code không "đoán một phát ra code". Nó chạy một vòng lặp giống một kỹ sư thật: quan sát → lập kế hoạch → sửa → chạy → kiểm chứng, lặp lại đến khi đạt.</p>
+
+  <div class="arch">
+    <div class="arch-flow">
+      <div class="arch-box a1"><div class="arch-icon">🔍</div><div class="arch-box-title">Observe</div><div class="arch-box-desc">Đọc file, tìm kiếm code, chạy lệnh để hiểu bối cảnh</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a2"><div class="arch-icon">🧭</div><div class="arch-box-title">Plan</div><div class="arch-box-desc">Chia nhỏ nhiệm vụ, quyết định sửa file nào</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a3"><div class="arch-icon">✏️</div><div class="arch-box-title">Edit</div><div class="arch-box-desc">Sửa nhiều file bằng công cụ Edit/Write</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a4"><div class="arch-icon">▶️</div><div class="arch-box-title">Run</div><div class="arch-box-desc">Chạy test / build / <code class="inline">docker compose up</code></div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a1"><div class="arch-icon">✅</div><div class="arch-box-title">Verify</div><div class="arch-box-desc">Đọc kết quả, nếu sai thì quay lại Plan</div></div>
+    </div>
+  </div>
+
+  <div class="callout gold">
+    <strong>Vấn đề "mất trí nhớ" (session amnesia):</strong> Mỗi lần bạn mở một phiên mới, agent <strong>không nhớ</strong> quy ước code của bạn, những gì đã sửa hôm qua, hay bài học đã rút ra. Nếu không có gì "dạy lại" nó mỗi phiên, nó sẽ lặp lại lỗi cũ và làm sai chuẩn của project.
+  </div>
+
+  <h3>Bấm thử: cùng một yêu cầu, có luật vs không có luật</h3>
+  <div class="demo">
+    <div class="pills">
+      <button class="pill active" onclick="pickCtx('none', event)">❌ Không có Rules/Skills</button>
+      <button class="pill" onclick="pickCtx('rules', event)">✅ Có Rules + tri thức project</button>
+    </div>
+    <div class="demo-out gd" id="ctxOut">
+      <div class="lbl">Yêu cầu: "Thêm một API endpoint mới"</div>
+      <div id="ctxText">Agent đoán theo thói quen chung: đặt tên file tùy ý, dùng thư viện nó thích, bỏ qua quy ước migration SQL của bạn, không viết test theo chuẩn project. Kết quả "chạy được" nhưng <strong>lệch chuẩn</strong> — bạn phải sửa lại tay.</div>
+    </div>
+  </div>
+
+  <h3>3 công cụ để "dạy" agent hiểu project của bạn</h3>
+  <div class="grid-3">
+    <div class="card"><div class="card-icon">📜</div><div class="card-title">Rules (luật)</div><div class="card-desc">Ràng buộc <strong>luôn bật</strong>. Mọi phiên đều phải tuân. Ví dụ: "migration SQL phải đăng ký trong MIGRATIONS".</div></div>
+    <div class="card"><div class="card-icon">🧩</div><div class="card-title">Skills (năng lực)</div><div class="card-desc">Quy trình <strong>gọi theo yêu cầu</strong>. Chỉ nạp khi cần. Ví dụ: skill "tạo báo cáo PDF".</div></div>
+    <div class="card"><div class="card-icon">🗂️</div><div class="card-title">Tri thức (md files)</div><div class="card-desc">Ghi lại điều đã tìm ra &amp; bài học, có cấu trúc để sau này nạp vào <strong>RAG</strong> (Module ④).</div></div>
+  </div>
+
+  <div class="callout">
+    <strong>Ba tab tiếp theo</strong> đi sâu vào từng công cụ, và tab ⑤ là Lab — bạn tự viết một Rule và một Skill đơn giản. Đây là nền tảng cho Module 4 (RAG): tri thức bạn ghi hôm nay chính là dữ liệu bạn nhúng vào RAG buổi sau.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 2 — RULES -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section" id="s-rules">
+  <div class="eyebrow">Module 03 · Rules</div>
+  <h2>Rules — bộ luật mà mọi phiên phải học</h2>
+  <p class="lead">
+    Rule là <strong>ràng buộc luôn bật</strong>: những quy ước không được vi phạm, được nạp vào đầu mỗi phiên để agent "hiểu cách làm việc trong project này". Trong Claude Code, luật sống ở các file Markdown mà agent đọc tự động: <code class="inline">CLAUDE.md</code>, <code class="inline">must-read.md</code>, và thư mục <code class="inline">.claude/rules/</code>.
+  </p>
+
+  <h3>Agent nạp luật như thế nào?</h3>
+  <div class="arch">
+    <div class="arch-flow">
+      <div class="arch-box a1"><div class="arch-icon">🚀</div><div class="arch-box-title">Mở phiên</div><div class="arch-box-desc">Claude Code khởi động trong thư mục project</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a2"><div class="arch-icon">📖</div><div class="arch-box-title">CLAUDE.md</div><div class="arch-box-desc">File đầu tiên agent đọc — chỉ mục &amp; luật cốt lõi</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a3"><div class="arch-icon">🔑</div><div class="arch-box-title">must-read.md</div><div class="arch-box-desc">File "chìa khoá" — luật bắt buộc của project</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a4"><div class="arch-icon">📂</div><div class="arch-box-title">.claude/rules/</div><div class="arch-box-desc">Các luật chi tiết theo chủ đề</div></div>
+    </div>
+  </div>
+
+  <div class="callout purple">
+    <strong><code class="inline">must-read.md</code> là chìa khoá.</strong> Đây là file mà <em>mọi phiên đều phải học đầu tiên</em> để biết cách làm việc với project: quy ước CSS, cách đồng bộ prompt agent với DB, mẫu migration SQL, cách đặt tên file Q&amp;A... Ai (hoặc AI nào) mới vào project chỉ cần đọc file này là biết luật chơi.
+  </div>
+
+  <h3>Giải phẫu một Rule</h3>
+  <p>Một rule tốt rất cụ thể: nêu <strong>điều phải/không được làm</strong>, kèm <strong>lý do</strong> và <strong>ví dụ</strong>. Dưới đây là một rule thật (rút gọn) từ một project automation testing:</p>
+
+  <div class="filebox">
+    <div class="filebox-bar"><span>.claude/rules/file-organization.md</span><span class="filebox-tag">RULE · luôn bật</span></div>
+<pre><span class="c-cmt"># Quy tắc tổ chức file</span>
+
+<span class="c-h">## Rule B — File Q&amp;A: `rag-ai-local/QandA/MMDDYYYY_&lt;Chủ_Đề&gt;.md`</span>
+- Mỗi <span class="c-key">chủ đề</span> một file, tên có ngày + chủ đề (KHÔNG cần chữ "QandA").
+- Câu hỏi đánh số `Q1`, `Q2`, ... trong từng file.
+- Ví dụ: `07042026_Agentic_Crawler_Replay_Trap.md`
+
+<span class="c-h">## Rule C — File .md khác: `rag-ai-local/functionality-docs/MMDDYYYY/NN_&lt;slug&gt;.md`</span>
+- Chỉ có <span class="c-key">thư mục ngày MMDDYYYY</span> — KHÔNG có thư mục tính năng.
+  File có tiền tố `NN_`, slug chứa tên tính năng.
+- Ví dụ: `07042026/01_thiet-ke-corrector-agents.md`</pre>
+  </div>
+
+  <div class="callout gold">
+    <strong>Đồng bộ bắt buộc:</strong> khi sửa một rule ở <code class="inline">.claude/rules/</code>, phải cập nhật bản sao tương ứng trong <code class="inline">must-read.md</code> (và ngược lại). Luật mà "hai nơi nói khác nhau" thì agent sẽ làm sai — giữ một nguồn sự thật.
+  </div>
+
+  <h3>Rule tốt vs Rule dở</h3>
+  <div class="grid-2">
+    <div class="card" style="border-color:rgba(45,212,160,.3)">
+      <div class="card-icon">✅</div>
+      <div class="card-title" style="color:var(--green)">Cụ thể, kiểm chứng được</div>
+      <div class="card-desc">"Mọi file migration SQL mới phải đăng ký trong danh sách <code class="inline">MIGRATIONS</code> ở <code class="inline">config/migrations.py</code>, theo đúng thứ tự chạy." → Agent biết chính xác phải làm gì.</div>
+    </div>
+    <div class="card" style="border-color:rgba(248,113,113,.3)">
+      <div class="card-icon">⚠️</div>
+      <div class="card-title" style="color:var(--red)">Mơ hồ, vô dụng</div>
+      <div class="card-desc">"Viết code sạch và tuân theo best practice." → Không đo được, mỗi phiên hiểu một kiểu. Agent không thể tuân một luật không cụ thể.</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Nguyên tắc vàng khi viết Rule:</strong> nếu bạn không thể chỉ ra một ví dụ <em>đúng</em> và một ví dụ <em>sai</em> cho luật đó, thì luật còn quá mơ hồ. Viết lại cho tới khi cụ thể và kiểm chứng được.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 3 — SKILLS -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section" id="s-skills">
+  <div class="eyebrow">Module 03 · Skills</div>
+  <h2>Skills — năng lực gọi theo yêu cầu</h2>
+  <p class="lead">
+    Nếu Rule là "luật luôn bật", thì Skill là một <strong>quy trình đóng gói sẵn</strong> mà agent chỉ <strong>nạp khi cần</strong>. Nó dạy agent <em>cách làm một việc cụ thể</em> — ví dụ "tạo file PDF", "review code theo checklist", "khởi động stack sạch". Skill được viết trong một file <code class="inline">SKILL.md</code> và được kích hoạt khi bạn gõ tên nó (dạng <code class="inline">/tên-skill</code>) hoặc khi nhiệm vụ khớp mô tả của skill.
+  </p>
+
+  <h3>Rule khác Skill như thế nào?</h3>
+  <table class="cmp-table">
+    <thead><tr><th>Tiêu chí</th><th>📜 Rule</th><th>🧩 Skill</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Khi nào hoạt động</strong></td><td><span class="tag-cell tag-rule">Luôn bật</span> mọi phiên, mọi tác vụ</td><td><span class="tag-cell tag-skill">Theo yêu cầu</span> — chỉ khi gọi/khớp</td></tr>
+      <tr><td><strong>Bản chất</strong></td><td>Ràng buộc, điều được/không được làm</td><td>Quy trình, các bước để làm một việc</td></tr>
+      <tr><td><strong>Kích hoạt</strong></td><td>Tự động nạp vào ngữ cảnh</td><td>Gõ <code class="inline">/slug</code> hoặc khớp mô tả tác vụ</td></tr>
+      <tr><td><strong>Ví dụ</strong></td><td>"Không hardcode màu hex trong CSS"</td><td>"Tạo báo cáo PDF từ dữ liệu"</td></tr>
+      <tr><td><strong>Chi phí ngữ cảnh</strong></td><td>Luôn tốn token (nên viết ngắn gọn)</td><td>Chỉ tốn khi được nạp</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout green">
+    <strong>Ẩn dụ dễ nhớ:</strong> Rule là <em>nội quy công ty</em> dán trên tường — ai vào cũng phải theo. Skill là <em>cuốn cẩm nang quy trình</em> trên kệ — khi cần làm việc gì mới lấy đúng cuốn đó ra đọc.
+  </div>
+
+  <h3>Cấu trúc một file SKILL.md</h3>
+  <p>Một skill gồm <strong>frontmatter</strong> (metadata ở đầu file, giữa hai dấu <code class="inline">---</code>) để agent biết <em>khi nào</em> dùng, và phần thân là <strong>hướng dẫn từng bước</strong>.</p>
+
+  <div class="filebox">
+    <div class="filebox-bar"><span>.claude/skills/clean-restart/SKILL.md</span><span class="filebox-tag">SKILL · theo yêu cầu</span></div>
+<pre><span class="c-cmt">---</span>
+<span class="c-key">name</span>: <span class="c-str">clean-restart</span>
+<span class="c-key">description</span>: <span class="c-str">Khởi động lại stack sạch: xoá container + image API,</span>
+  <span class="c-str">rồi build lại. Dùng khi cần chạy code mới nhất trong Docker.</span>
+<span class="c-cmt">---</span>
+
+<span class="c-h"># Clean Restart</span>
+
+Khi người dùng yêu cầu "khởi động lại sạch", làm theo các bước:
+
+1. Xoá <span class="c-key">CHỈ</span> container + image của API (KHÔNG đụng vào DB pgvector).
+2. Build lại: `docker compose up -d --build automation-test-api`.
+3. Đợi health-check `GET /docs` trả 200 rồi báo người dùng.
+
+<span class="c-key">Lưu ý:</span> tuyệt đối không xoá volume database — mất toàn bộ dữ liệu crawl.</pre>
+  </div>
+
+  <h3>Bấm thử: điều gì kích hoạt một Skill?</h3>
+  <div class="demo">
+    <div class="pills">
+      <button class="pill active p" onclick="pickTrig('slash', event)">Gõ /clean-restart</button>
+      <button class="pill" onclick="pickTrig('match', event)">"khởi động lại sạch giúp tôi"</button>
+      <button class="pill" onclick="pickTrig('other', event)">"đổi màu nút login"</button>
+    </div>
+    <div class="demo-out p" id="trigOut">
+      <div class="lbl">Kết quả</div>
+      <div id="trigText">Người dùng gõ đúng tên skill → agent <strong>nạp SKILL.md</strong> và làm theo 3 bước trong đó. Đây là cách gọi tường minh nhất.</div>
+    </div>
+  </div>
+
+  <div class="callout purple">
+    <strong>Mô tả (description) quyết định độ chính xác kích hoạt.</strong> Viết description rõ ràng, nêu đúng tình huống dùng — nếu quá chung chung, agent sẽ nạp skill sai lúc, hoặc bỏ sót khi đáng dùng.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 4 — KNOWLEDGE FOR RAG -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section" id="s-knowledge">
+  <div class="eyebrow">Module 03 · Quản lý tri thức</div>
+  <h2>Quá nhiều file .md — quản lý sao cho nạp được vào RAG</h2>
+  <p class="lead">
+    Khi làm việc với AI, bạn sẽ sinh ra <strong>rất nhiều file .md</strong>: ghi chú điều tra, thiết kế, bài học rút ra, hỏi–đáp... Nếu vứt lộn xộn thì vô dụng. Bí quyết: ghi chúng theo <strong>một quy ước cố định</strong>, chia làm hai loại — <code class="inline">functionality/</code> (tri thức theo tính năng) và <code class="inline">QandA/</code> (hỏi–đáp) — để sau này <strong>cắt nhỏ (chunk) và nhúng vào RAG</strong> (Module ④).
+  </p>
+
+  <h3>Hai loại tri thức, hai thư mục</h3>
+  <div class="grid-2">
+    <div class="card" style="border-color:rgba(79,142,247,.3)">
+      <div class="card-icon">🧠</div>
+      <div class="card-title" style="color:var(--accent)">rag-ai-local/functionality-docs/</div>
+      <div class="card-desc">Tri thức về <strong>một tính năng</strong>: nó hoạt động ra sao, quyết định thiết kế, bài học, hậu quả. Sau này hỏi RAG "tính năng X làm gì?" → lấy ra đúng ghi chú này.</div>
+    </div>
+    <div class="card" style="border-color:rgba(45,212,160,.3)">
+      <div class="card-icon">💬</div>
+      <div class="card-title" style="color:var(--green)">rag-ai-local/QandA/</div>
+      <div class="card-desc">Các cặp <strong>câu hỏi – câu trả lời</strong>, mỗi file một chủ đề, tên <code class="inline">MMDDYYYY_&lt;Chủ_Đề&gt;.md</code>. Định dạng Q/A rất hợp với RAG: hỏi một câu là lấy được câu trả lời tương ứng.</div>
+    </div>
+  </div>
+
+  <h3>Cây thư mục theo quy ước</h3>
+  <div class="tree"><span class="dir">project/</span>
+├── <span class="key">must-read.md</span>                <span class="cmt"># chìa khoá — luật bắt buộc, mọi phiên đọc đầu tiên</span>
+├── <span class="key">CLAUDE.md</span>                   <span class="cmt"># chỉ mục &amp; luật cốt lõi (init)</span>
+├── <span class="dir">.claude/rules/</span>              <span class="cmt"># các Rule chi tiết (luôn bật)</span>
+├── <span class="dir">.claude/skills/</span>             <span class="cmt"># các Skill (theo yêu cầu)</span>
+└── <span class="dir">rag-ai-local/</span>              <span class="cmt"># ⭐ MỌI tri thức .md nằm ở đây — sẵn sàng cho RAG</span>
+    ├── <span class="dir">QandA/</span>              <span class="cmt"># tên = MMDDYYYY_&lt;Chủ_Đề&gt;.md (KHÔNG cần chữ "QandA")</span>
+    │   ├── <span class="key">07042026_Agentic_Crawler_Replay_Trap.md</span>
+    │   └── <span class="key">07072026_Rule_Skill_Basics.md</span>
+    └── <span class="dir">functionality-docs/</span>   <span class="cmt"># CHỈ có thư mục ngày MMDDYYYY (KHÔNG có thư mục tính năng)</span>
+        └── <span class="dir">07072026/</span>
+            ├── <span class="key">01_thiet-ke-corrector-agents.md</span>   <span class="cmt"># NN_ + slug chứa tên tính năng</span>
+            └── <span class="key">02_handoff-fixing-test-runner.md</span></div>
+
+  <div class="callout gold">
+    <strong>Quy tắc vàng:</strong> KHÔNG để file .md tri thức nào ở thư mục gốc hay nơi khác — mọi tài liệu vào <code class="inline">rag-ai-local/functionality-docs/</code>, mọi hỏi–đáp vào <code class="inline">rag-ai-local/QandA/</code>. Ngoại lệ duy nhất: file <strong>rule, skill, init</strong> (must-read.md, CLAUDE.md, .claude/...). Nhờ gom một chỗ, cả kho tri thức sẵn sàng để chunk + nhúng RAG.
+  </div>
+  <div class="callout gold">
+    <strong>Vì sao đặt tên theo ngày &amp; số thứ tự?</strong> Vì nó cho mỗi mẩu tri thức một "địa chỉ" ổn định, không trùng, và giữ đúng thứ tự thời gian. Khi chunk để nhúng RAG, mỗi file là một đơn vị gọn — metadata (ngày, tính năng, số thứ tự) trở thành nhãn để lọc/truy hồi.
+  </div>
+
+  <h3>Metadata — để file sẵn sàng cho RAG + Elasticsearch</h3>
+  <p><strong>Cả hai loại — QandA và functionality — dùng CHUNG một header metadata + TL;DR</strong> (chỉ khác trường <code class="inline">type</code>), để chunk &amp; index đồng nhất. Chỉ đặt tên đúng thôi chưa đủ: mỗi file phải mở đầu bằng <strong>metadata (YAML frontmatter)</strong> và một khối <strong>TL;DR</strong>. Vì sao? Vì khi nhúng vào <strong>pgvector</strong>, các trường metadata trở thành <strong>cột để lọc trước (pre-filter)</strong> — thu hẹp phạm vi <em>trước khi</em> so khớp vector (nhanh &amp; chính xác hơn). Còn <code class="inline">title</code> + TL;DR được index cho <strong>Elasticsearch (full-text / BM25)</strong> — tức <em>hybrid search</em>: vừa tìm theo nghĩa (vector) vừa tìm theo từ khoá.</p>
+
+  <div class="filebox">
+    <div class="filebox-bar"><span>rag-ai-local/QandA/07042026_Agentic_Crawler_Replay_Trap.md</span><span class="filebox-tag">metadata bắt buộc</span></div>
+<pre><span class="c-cmt">---</span>
+<span class="c-key">title</span>: <span class="c-str">Agentic Crawler Replay Trap</span>       <span class="c-cmt"># tiêu đề — cũng để full-text</span>
+<span class="c-key">date</span>: <span class="c-str">2026-07-04</span>                     <span class="c-cmt"># lọc theo khoảng thời gian</span>
+<span class="c-key">type</span>: <span class="c-str">qanda</span>                          <span class="c-cmt"># qanda | functionality</span>
+<span class="c-key">area</span>: <span class="c-str">agentic-crawler</span>               <span class="c-cmt"># lọc theo tính năng (facet)</span>
+<span class="c-key">status</span>: <span class="c-str">implementation-complete</span>       <span class="c-cmt"># in-progress | investigation | ...</span>
+<span class="c-key">session_id</span>: <span class="c-str">912b894b-7508-4bb3</span>
+<span class="c-key">duration</span>: <span class="c-str">108min</span>
+<span class="c-key">tags</span>: <span class="c-str">[crawler, navigation, replay, healer]</span>  <span class="c-cmt"># facet pre-filter</span>
+<span class="c-cmt">---</span>
+
+<span class="c-h">## TL;DR</span>
+- <span class="c-key">What:</span>  Bẫy replay khiến crawler lặp vô hạn ở wizard nhiều bước.
+- <span class="c-key">Why:</span>   Hash trạng thái trùng nên navigator tưởng chưa đi qua.
+- <span class="c-key">Where:</span> observer._compute_state_hash + navigator.
+- <span class="c-key">Impact:</span> Sửa hash một nguồn → crawler qua được mọi bước.
+
+<span class="c-h">## Q1: Vì sao crawler kẹt ở wizard?</span>
+...</pre>
+  </div>
+
+  <div class="callout purple">
+    <strong>Pre-filter + Hybrid search:</strong> retriever chạy 2 tầng — (1) lọc theo metadata (<code class="inline">area='agentic-crawler' AND status='implementation-complete'</code>) để loại bớt, rồi (2) tìm trên vector <em>và</em> full-text (Elasticsearch) trong phần còn lại. TL;DR ngắn gọn giúp cả hai tầng "bắt" đúng — embedding gọn nghĩa, từ khoá rõ ràng.
+  </div>
+
+  <h3>Từ file .md → RAG (cầu nối sang Module ④)</h3>
+  <div class="arch">
+    <div class="arch-flow">
+      <div class="arch-box a1"><div class="arch-icon">📝</div><div class="arch-box-title">File .md có quy ước</div><div class="arch-box-desc">QandA / functionality theo chuẩn đặt tên</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a2"><div class="arch-icon">✂️</div><div class="arch-box-title">Chunk</div><div class="arch-box-desc">Cắt nhỏ thành đoạn (mỗi Q&amp;A / mỗi ghi chú)</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a3"><div class="arch-icon">🔢</div><div class="arch-box-title">Embed</div><div class="arch-box-desc">Biến mỗi đoạn thành vector (Module ①)</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box a4"><div class="arch-icon">🔎</div><div class="arch-box-title">Truy hồi</div><div class="arch-box-desc">Hỏi 1 câu → tìm đoạn gần nhất → trả lời</div></div>
+    </div>
+  </div>
+
+  <h3>Bấm thử: hỏi một câu, RAG lấy đúng file nào?</h3>
+  <div class="demo">
+    <div class="pills">
+      <button class="pill active g" onclick="pickRag('q1', event)">"Tại sao migration bị lỗi 500?"</button>
+      <button class="pill" onclick="pickRag('q2', event)">"Corrector agent để làm gì?"</button>
+    </div>
+    <div class="demo-out g" id="ragOut">
+      <div class="lbl">RAG truy hồi</div>
+      <div id="ragText">Câu hỏi được nhúng thành vector → so khớp với các chunk → lấy ra <strong>QandA_07042026.md · Q3</strong> (nơi từng ghi lại đúng lỗi này) và trả lời kèm nguồn. Đó là lý do ta ghi Q&amp;A có cấu trúc ngay từ hôm nay.</div>
+    </div>
+  </div>
+
+  <div class="callout green">
+    <strong>Kết nối Module ④ (RAG):</strong> tri thức bạn ghi hôm nay (QandA + functionality) chính là <em>dữ liệu đầu vào</em> cho RAG buổi sau. Ghi đúng quy ước hôm nay = buổi sau nhúng vào RAG là chạy được ngay, không phải dọn dẹp lại.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 5 — LAB -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section" id="s-lab">
+  <div class="eyebrow">Module 03 · Lab thực hành</div>
+  <h2>Lab: Viết Rule &amp; Skill đầu tiên của bạn</h2>
+  <p class="lead">
+    Mục tiêu: trên project <code class="inline">lab_01-Hello-World</code>, bạn sẽ (1) viết một <strong>Rule</strong> đơn giản, (2) viết một <strong>Skill</strong> đơn giản, và (3) ghi lại một mẩu tri thức theo quy ước <code class="inline">QandA/</code> + <code class="inline">functionality/</code>. Đây là hành trang cho Module ④ (RAG).
+  </p>
+
+  <div class="callout">
+    <strong>Chuẩn bị:</strong> mở terminal tại thư mục <code class="inline">lab_01-Hello-World</code>, chạy <code class="inline">claude</code> để vào Claude Code. Yêu cầu: đã cài Claude Code, có Docker (từ Module ②).
+  </div>
+
+  <h3>Phần 1 — Viết một Rule <span class="badge gold">luôn bật</span></h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <h4>Tạo file luật</h4>
+      <p>Tạo <code class="inline">.claude/rules/coding-convention.md</code> với một luật cụ thể, kiểm chứng được:</p>
+      <div class="filebox">
+        <div class="filebox-bar"><span>.claude/rules/coding-convention.md</span><span class="filebox-tag">bạn viết</span></div>
+<pre><span class="c-cmt"># Quy ước code — Lab Hello World</span>
+
+<span class="c-h">## Rule 1 — Mọi hàm Python phải có type hints</span>
+- Tham số và giá trị trả về đều phải khai báo kiểu.
+- <span class="c-str">Đúng:</span>  `def greet(name: str) -> str:`
+- <span class="c-str">Sai:</span>   `def greet(name):`
+
+<span class="c-h">## Rule 2 — Không print() trong code chính, dùng logging</span>
+- Dùng `logging.info(...)`, không dùng `print(...)` ngoài file test.</pre>
+      </div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h4>Đăng ký luật để agent chắc chắn đọc</h4>
+      <p>Thêm một dòng trỏ tới rule trong <code class="inline">CLAUDE.md</code> (tạo file nếu chưa có):</p>
+      <div class="filebox">
+        <div class="filebox-bar"><span>CLAUDE.md</span><span class="filebox-tag">bạn viết</span></div>
+<pre><span class="c-h"># CLAUDE.md</span>
+
+<span class="c-h">## Luật project</span>
+- Xem <span class="c-key">[.claude/rules/coding-convention.md]</span> — type hints &amp; logging (bắt buộc).</pre>
+      </div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h4>Kiểm chứng luật hoạt động</h4>
+      <p>Trong Claude Code, yêu cầu agent viết một hàm mới. Nó phải tự động tuân luật (có type hints, dùng logging):</p>
+      <div class="terminal">
+        <div class="terminal-bar"><span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span><span class="terminal-title">claude — lab_01-Hello-World</span></div>
+        <div class="terminal-body"><span class="t-prompt">&gt; </span><span class="t-cmd">Viết hàm add_numbers cộng hai số trong app.py</span>
+<span class="t-out">● Đã đọc .claude/rules/coding-convention.md</span>
+<span class="t-out">● Viết app.py:</span>
+<span class="t-hi">    def add_numbers(a: int, b: int) -> int:   # ✔ có type hints
+        logging.info("adding %s + %s", a, b)  # ✔ dùng logging, không print
+        return a + b</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Phần 2 — Viết một Skill <span class="badge purple">theo yêu cầu</span></h3>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <h4>Tạo file SKILL.md</h4>
+      <p>Tạo <code class="inline">.claude/skills/run-hello/SKILL.md</code> — một quy trình chạy &amp; kiểm tra app:</p>
+      <div class="filebox">
+        <div class="filebox-bar"><span>.claude/skills/run-hello/SKILL.md</span><span class="filebox-tag">bạn viết</span></div>
+<pre><span class="c-cmt">---</span>
+<span class="c-key">name</span>: <span class="c-str">run-hello</span>
+<span class="c-key">description</span>: <span class="c-str">Build &amp; chạy app Hello World bằng Docker rồi kiểm tra</span>
+  <span class="c-str">output. Dùng khi cần chạy thử app sau khi sửa code.</span>
+<span class="c-cmt">---</span>
+
+<span class="c-h"># Run Hello</span>
+
+1. Build image: `docker build -t hello .`
+2. Chạy container: `docker run --rm hello`
+3. Kiểm tra output có chuỗi `Hello`; nếu không, báo lỗi kèm log.</pre>
+      </div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <h4>Gọi skill</h4>
+      <p>Gõ <code class="inline">/run-hello</code> trong Claude Code. Agent nạp SKILL.md và làm theo 3 bước — bạn không phải nhắc lại quy trình mỗi lần.</p>
+      <div class="terminal">
+        <div class="terminal-bar"><span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span><span class="terminal-title">claude</span></div>
+        <div class="terminal-body"><span class="t-prompt">&gt; </span><span class="t-cmd">/run-hello</span>
+<span class="t-out">● docker build -t hello .   → OK</span>
+<span class="t-out">● docker run --rm hello     → </span><span class="t-hi">"Hello, World!"</span>
+<span class="t-out">● Output chứa "Hello" ✔  — app chạy đúng</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Phần 3 — Ghi tri thức cho RAG <span class="badge green">Module ④</span></h3>
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <h4>Ghi một cặp Q&amp;A theo quy ước (kèm metadata)</h4>
+      <p>Tạo <code class="inline">rag-ai-local/QandA/07072026_Rule_Skill_Basics.md</code> — tên = ngày + chủ đề, mở đầu bằng frontmatter + TL;DR:</p>
+      <div class="filebox">
+        <div class="filebox-bar"><span>rag-ai-local/QandA/07072026_Rule_Skill_Basics.md</span><span class="filebox-tag">bạn viết</span></div>
+<pre><span class="c-cmt">---</span>
+<span class="c-key">title</span>: <span class="c-str">Rule &amp; Skill Basics</span>
+<span class="c-key">date</span>: <span class="c-str">2026-07-07</span>
+<span class="c-key">type</span>: <span class="c-str">qanda</span>
+<span class="c-key">area</span>: <span class="c-str">rules-and-skills</span>
+<span class="c-key">status</span>: <span class="c-str">implementation-complete</span>
+<span class="c-key">tags</span>: <span class="c-str">[rule, skill, logging]</span>
+<span class="c-cmt">---</span>
+
+<span class="c-h">## TL;DR</span>
+- <span class="c-key">What:</span> Phân biệt Rule vs Skill &amp; quy ước logging trong Lab.
+
+<span class="c-h">## Q1: Rule và Skill khác nhau chỗ nào?</span>
+Rule luôn bật (ràng buộc mọi phiên); Skill nạp theo yêu cầu.
+
+<span class="c-h">## Q2: Vì sao dùng logging thay cho print?</span>
+Logging điều chỉnh được mức độ, ghi ra file, không làm bẩn output.</pre>
+      </div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <h4>Ghi một ghi chú functionality (cùng metadata header)</h4>
+      <p>Tạo <code class="inline">rag-ai-local/functionality-docs/07072026/01_lab-notes-rules-and-skills.md</code> — chỉ có thư mục ngày, slug chứa tên tính năng. File functionality dùng <strong>y hệt</strong> frontmatter + TL;DR như file QandA — chỉ khác <code class="inline">type: functionality</code>. Nhờ vậy cả hai loại chunk &amp; index giống nhau.</p>
+      <div class="filebox">
+        <div class="filebox-bar"><span>...functionality-docs/07072026/01_lab-notes-rules-and-skills.md</span><span class="filebox-tag">bạn viết</span></div>
+<pre><span class="c-cmt">---</span>
+<span class="c-key">title</span>: <span class="c-str">Lab — Rule &amp; Skill Đầu Tiên</span>
+<span class="c-key">date</span>: <span class="c-str">2026-07-07</span>
+<span class="c-key">type</span>: <span class="c-str">functionality</span>          <span class="c-cmt"># ← khác biệt duy nhất so với QandA</span>
+<span class="c-key">area</span>: <span class="c-str">rules-and-skills</span>
+<span class="c-key">status</span>: <span class="c-str">implementation-complete</span>
+<span class="c-key">tags</span>: <span class="c-str">[rule, skill, lab, logging]</span>
+<span class="c-cmt">---</span>
+
+<span class="c-h">## TL;DR</span>
+- <span class="c-key">What:</span>  Thêm 1 Rule (type hints + logging) và 1 Skill (run-hello).
+- <span class="c-key">Why:</span>   Để agent tự tuân chuẩn &amp; có quy trình chạy thử.
+- <span class="c-key">Where:</span> .claude/rules/coding-convention.md + .claude/skills/run-hello/.
+- <span class="c-key">Impact:</span> Mọi phiên sau viết code đúng chuẩn, chạy thử bằng /run-hello.
+
+<span class="c-h">## Chi tiết</span>
+...</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout green">
+    <strong>✅ Hoàn thành Lab, bạn đã có:</strong> 1 Rule (luôn bật) + 1 Skill (theo yêu cầu) + 2 mẩu tri thức đúng quy ước RAG. Nộp lại: cây thư mục <code class="inline">.claude/</code>, <code class="inline">QandA/</code>, và thư mục functionality của bạn.
+  </div>
+  <div class="callout purple">
+    <strong>Chuẩn bị Module ④ (RAG):</strong> mang theo các file <code class="inline">QandA/</code> và <code class="inline">functionality/</code> bạn viết hôm nay — buổi sau ta sẽ chunk, embed và xây một RAG hỏi–đáp chính trên chúng.
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// Tab 1 — context demo
+const ctxText = {
+  none: 'Agent đoán theo thói quen chung: đặt tên file tùy ý, dùng thư viện nó thích, bỏ qua quy ước migration SQL của bạn, không viết test theo chuẩn project. Kết quả "chạy được" nhưng <strong>lệch chuẩn</strong> — bạn phải sửa lại tay.',
+  rules: 'Agent đọc <strong>must-read.md</strong> + <strong>.claude/rules/</strong> trước: đặt tên file đúng quy ước, đăng ký migration vào MIGRATIONS, viết test theo chuẩn, tra <strong>QandA/</strong> để không lặp lỗi cũ. Kết quả <strong>đúng chuẩn ngay từ đầu</strong>.'
+};
+function pickCtx(k, e) {
+  document.querySelectorAll('#s-code .pill').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('ctxText').innerHTML = ctxText[k];
+}
+
+// Tab 3 — trigger demo
+const trigText = {
+  slash: 'Người dùng gõ đúng tên skill → agent <strong>nạp SKILL.md</strong> và làm theo 3 bước trong đó. Đây là cách gọi tường minh nhất.',
+  match: 'Câu nói khớp <strong>description</strong> của skill ("khởi động lại sạch") → agent tự nhận ra và nạp skill <code class="inline">clean-restart</code>. Vì vậy description phải viết rõ.',
+  other: 'Yêu cầu không liên quan ("đổi màu nút") → skill <strong>KHÔNG</strong> được nạp, không tốn token. Đó là ưu điểm "theo yêu cầu" của skill so với rule.'
+};
+function pickTrig(k, e) {
+  document.querySelectorAll('#s-skills .pill').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('trigText').innerHTML = trigText[k];
+}
+
+// Tab 4 — RAG demo
+const ragText = {
+  q1: 'Retriever lọc trước theo metadata (<code class="inline">tags có "migration"</code>) → rồi so khớp vector + full-text → lấy ra <strong>07042026_Migration_500_Error.md · Q3</strong> (nơi từng ghi đúng lỗi: varchar(5) tràn khiến API trả 500) và trả lời kèm nguồn. Đó là lý do ta ghi Q&amp;A + metadata có cấu trúc ngay từ hôm nay.',
+  q2: 'So khớp vector → lấy ra ghi chú <strong>rag-ai-local/functionality-docs/07042026/01_thiet-ke-corrector-agents.md</strong> — giải thích corrector là một agent LLM chạy sau agent chính để sửa đúng một luật hay bị vi phạm. Nguồn rõ ràng nhờ slug chứa tên tính năng + metadata area.'
+};
+function pickRag(k, e) {
+  document.querySelectorAll('#s-knowledge .pill').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('ragText').innerHTML = ragText[k];
+}
+</script>
+</body>
+</html>
