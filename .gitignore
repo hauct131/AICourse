@@ -13,3 +13,12 @@ ENV/
 
 # Bỏ qua file cấu hình bảo mật
 .env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+Lab/Lab4/pgdata/
+AICourse-review.zip
+Lab/lab4-rag/
