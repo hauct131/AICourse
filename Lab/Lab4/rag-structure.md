@@ -1,5 +1,8 @@
 # RAG pipeline — cấu trúc code (bạn tự implement)
 
+> **Ghi chú bản nộp:** Đây là kiến trúc tham chiếu ban đầu. Để hoàn thành lab trong thời gian giới hạn, bản chạy thật gộp indexing, retrieval và API vào `rag_pipeline/app.py`.
+
+
 > Đây là BỘ KHUNG bạn cần xây. Lab chỉ mô tả **nhiệm vụ từng file** và **luồng dữ liệu** —
 > code Python bạn tự viết. Hai "process" (indexing + retrieval) được bọc lại sau một
 > lớp `api/` để UI gọi được: **/upload** (nạp file) và **/chat** (hỏi).

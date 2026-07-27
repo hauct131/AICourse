@@ -27,7 +27,7 @@ services:
 
   model-init:
     image: curlimages/curl:8.10.1
-    profiles: ["setup"]
+    restart: "no"
     depends_on:
       ollama:
         condition: service_healthy
@@ -59,11 +59,11 @@ services:
       OLLAMA_LLM_MODEL: ${OLLAMA_LLM_MODEL:-llama3.2:1b}
       OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
       EMBEDDING_DIM: "768"
-      TOP_K: ${TOP_K:-4}
-      LOW_CONFIDENCE_THRESHOLD: ${LOW_CONFIDENCE_THRESHOLD:-0.50}
-      HIGH_CONFIDENCE_THRESHOLD: ${HIGH_CONFIDENCE_THRESHOLD:-0.68}
-      MIN_KEYWORD_OVERLAP: ${MIN_KEYWORD_OVERLAP:-1}
-      MIN_KEYWORD_COVERAGE: ${MIN_KEYWORD_COVERAGE:-0.20}
+      TOP_K: ${TOP_K:-8}
+      LOW_CONFIDENCE_THRESHOLD: ${LOW_CONFIDENCE_THRESHOLD:-0.56}
+      HIGH_CONFIDENCE_THRESHOLD: ${HIGH_CONFIDENCE_THRESHOLD:-0.72}
+      MIN_KEYWORD_OVERLAP: ${MIN_KEYWORD_OVERLAP:-2}
+      MIN_KEYWORD_COVERAGE: ${MIN_KEYWORD_COVERAGE:-0.50}
       MAX_CONTEXT_CHUNKS: ${MAX_CONTEXT_CHUNKS:-3}
       CHUNK_SIZE: ${CHUNK_SIZE:-800}
       CHUNK_OVERLAP: ${CHUNK_OVERLAP:-120}
@@ -73,6 +73,8 @@ services:
         condition: service_healthy
       ollama:
         condition: service_healthy
+      model-init:
+        condition: service_completed_successfully
     ports:
       - "${RAG_PORT:-8001}:8000"
     volumes:

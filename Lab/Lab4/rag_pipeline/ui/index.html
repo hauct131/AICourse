@@ -42,7 +42,7 @@
     <textarea id="q" placeholder="Hỏi một câu... (Enter để gửi)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"></textarea>
     <button id="sendBtn" onclick="send()">Gửi</button>
   </div>
-  <div class="hint">Backend: POST /chat · POST /upload — chạy ở cùng origin (http://localhost:8000)</div>
+  <div class="hint">Backend: POST /chat · POST /upload — chạy cùng origin với giao diện</div>
 
 <script>
   const API = "";  // cùng origin — backend phục vụ trang này tại http://localhost:8000
