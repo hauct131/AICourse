@@ -105,3 +105,31 @@ curl -X POST http://localhost:8001/chat \
 - Chưa có OCR, PDF, reranking hoặc hybrid search.
 - Ngưỡng relevance được tinh chỉnh cho tập tài liệu lab; khi thay corpus lớn
   cần đánh giá lại trên bộ câu hỏi in-scope và out-of-scope.
+
+## Cấu hình relevance hiện tại
+
+Bản lab sử dụng relevance gate để giảm trả lời ngoài phạm vi:
+
+- `LOW_CONFIDENCE_THRESHOLD=0.70`
+- `HIGH_CONFIDENCE_THRESHOLD=0.76`
+- `MAX_CONTEXT_CHUNKS=1`
+- `TOP_K=8`
+
+Các ngưỡng này được tinh chỉnh từ bộ smoke test của lab. Khi thay đổi corpus,
+cần đánh giá lại bằng câu hỏi trong phạm vi và ngoài phạm vi.
+
+## Xử lý lỗi mật khẩu PostgreSQL
+
+PostgreSQL chỉ áp dụng `POSTGRES_PASSWORD` khi volume được tạo lần đầu.
+Nếu thay đổi mật khẩu trong `.env` nhưng giữ volume cũ, ứng dụng có thể báo:
+
+```text
+password authentication failed for user "raguser"
+```
+Trong môi trường lab, có thể tạo lại database bằng:
+
+docker compose down
+docker volume rm lab4_pgvector_data
+docker compose up -d --build
+
+Lệnh này xóa dữ liệu đã index trong PostgreSQL nhưng không xóa model Ollama.

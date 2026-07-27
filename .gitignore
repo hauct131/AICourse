@@ -29,3 +29,23 @@ Lab/lab4-rag/
 /refactor_rag_*.sh
 /final_fix_rag_*.sh
 /relax_rag_*.sh
+
+# Generated submission archives
+/Lab/Lab4*.zip
+
+# Temporary setup and repair scripts
+/bootstrap_aicourse_*.sh
+/prepare_lab4_submission*.sh
+/fix_config_wait_and_retest.sh
+/reset_pgvector_and_retest.sh
+/fix_rag_*.sh
+/refactor_rag_*.sh
+/final_fix_rag_*.sh
+/relax_rag_*.sh
+
+# Local environment and generated files
+.env
+**/.env
+**/__pycache__/
+**/*.py[cod]
+**/backups/
