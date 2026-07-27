@@ -22,3 +22,10 @@ __pycache__/
 Lab/Lab4/pgdata/
 AICourse-review.zip
 Lab/lab4-rag/
+
+# Temporary bootstrap and patch scripts
+/bootstrap_aicourse_*.sh
+/fix_rag_*.sh
+/refactor_rag_*.sh
+/final_fix_rag_*.sh
+/relax_rag_*.sh
